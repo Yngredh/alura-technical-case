@@ -7,7 +7,7 @@ import com.aluratechnicalcase.domain.exception.UserAlreadyExistException;
 import com.aluratechnicalcase.domain.exception.UserNotFoundException;
 
 public interface UserUseCases {
-    User createUser(UserCreateDTO userCreateDTO) throws UserAlreadyExistException;
+    void createUser(UserCreateDTO userCreateDTO) throws UserAlreadyExistException;
 
     UserResponseDTO findUserByUsername(String username) throws UserNotFoundException;
 }

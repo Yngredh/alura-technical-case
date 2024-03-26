@@ -1,4 +1,4 @@
-package com.aluratechnicalcase.presentation;
+package com.aluratechnicalcase.presentation.controller;
 
 import com.aluratechnicalcase.application.dto.UserCreateDTO;
 import com.aluratechnicalcase.application.dto.UserResponseDTO;
@@ -21,8 +21,8 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<User> create(@RequestBody @Valid UserCreateDTO user) throws UserAlreadyExistException {
-        User newUser = this.userService.createUser(user);
-        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+        this.userService.createUser(user);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/findByUsername")

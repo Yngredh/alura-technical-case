@@ -19,14 +19,11 @@ public class UserService implements UserUseCases {
     private UserRepository userRepository;
 
     @Override
-    public User createUser(UserCreateDTO userCreateDTO) throws UserAlreadyExistException {
+    public void createUser(UserCreateDTO userCreateDTO) throws UserAlreadyExistException {
         Boolean userAlreadyExist = this.userRepository.existsByUsernameOrEmail(userCreateDTO.username(), userCreateDTO.email());
         if (userAlreadyExist) throw new UserAlreadyExistException("Couldn't create new user because this one already exist");
 
-        LocalDate creationDate = LocalDate.now();
-        User newUser = new User(userCreateDTO, creationDate);
-        this.userRepository.save(newUser);
-        return newUser;
+        this.userRepository.save(new User(userCreateDTO, LocalDate.now()));
     }
 
     @Override
