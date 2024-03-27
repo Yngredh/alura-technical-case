@@ -1,8 +1,11 @@
 package com.aluratechnicalcase.application.service;
 
+import com.aluratechnicalcase.application.dto.AvaliationDTO;
 import com.aluratechnicalcase.application.dto.CourseCreateDTO;
+import com.aluratechnicalcase.application.repository.AvaliationRespository;
 import com.aluratechnicalcase.application.repository.CourseRepository;
 import com.aluratechnicalcase.application.repository.UserRepository;
+import com.aluratechnicalcase.domain.entity.Avaliation;
 import com.aluratechnicalcase.domain.entity.Course;
 import com.aluratechnicalcase.domain.entity.Role;
 import com.aluratechnicalcase.domain.entity.User;
@@ -10,7 +13,7 @@ import com.aluratechnicalcase.domain.exception.CourseAlreadyExistException;
 import com.aluratechnicalcase.domain.exception.CourseNotFoundException;
 import com.aluratechnicalcase.domain.exception.UnssuportedOperationException;
 import com.aluratechnicalcase.domain.usecase.CourseUseCases;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.aluratechnicalcase.infrastructure.service.EmailSender;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,11 +26,15 @@ import java.util.stream.Collectors;
 @Service
 public class CourseService implements CourseUseCases {
 
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private CourseRepository courseRepository;
+    private AvaliationRespository avaliationRespository;
+
+    public CourseService(UserRepository userRepository, CourseRepository courseRepository, AvaliationRespository avaliationRespository) {
+        this.userRepository = userRepository;
+        this.courseRepository = courseRepository;
+        this.avaliationRespository = avaliationRespository;
+    }
 
     @Override
     public void createCourse(CourseCreateDTO courseCreateDTO) throws UnssuportedOperationException, CourseAlreadyExistException {
@@ -54,8 +61,29 @@ public class CourseService implements CourseUseCases {
     public List<Course> findCourses(Boolean isAvailable, int pageNumber, int pageSize) {
         Page<Course> courses = this.courseRepository.findAllByIsAvailable(
                 isAvailable, PageRequest.of(pageNumber, pageSize));
-
         return courses.get().collect(Collectors.toList());
+    }
+
+    @Override
+    public void avaliate(AvaliationDTO avaliationDTO) throws UnssuportedOperationException {
+        Course course = this.courseRepository.findByCode(avaliationDTO.code());
+        User apprentice = userRepository.findUserByEmail(avaliationDTO.email());
+
+        validateAvaliation(course, apprentice);
+
+        Avaliation avaliation = new Avaliation(avaliationDTO, course, apprentice);
+        this.avaliationRespository.save(avaliation);
+
+        User instructor = course.getInstructor();
+        EmailSender.sendEmailWhenAvaliationValueIsUnderSix(
+                avaliation.getCourse(), avaliation.getApprentice(), instructor, avaliation.getMessage());
+    }
+
+    private void validateAvaliation(Course course, User apprentice) throws UnssuportedOperationException {
+        if (!course.getIsAvailable()) throw new UnssuportedOperationException("This course is not available");
+        if (apprentice.getRole().equals(Role.INSTRUTOR)) throw new UnssuportedOperationException("Instructor can't avaliate courses");
+        Avaliation avaliationAlreadyExist = this.avaliationRespository.findByApprenticeIdAndCourseId(apprentice.getId(), course.getId());
+        if (avaliationAlreadyExist != null) throw new UnssuportedOperationException("User can't avaliate a course twice");
     }
 
     public Course ifCourseIsNotAvailableThrowException(String code) throws UnssuportedOperationException {

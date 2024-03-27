@@ -1,5 +1,6 @@
 package com.aluratechnicalcase.presentation.controller;
 
+import com.aluratechnicalcase.application.dto.AvaliationDTO;
 import com.aluratechnicalcase.application.dto.CourseCreateDTO;
 import com.aluratechnicalcase.application.service.CourseService;
 import com.aluratechnicalcase.domain.entity.Course;
@@ -11,7 +12,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,5 +43,11 @@ public class CourseController {
     public List<Course> findAll(@RequestParam(defaultValue = "true") Boolean isAvailable,
                                 @NotNull Integer pageNumber, @NotNull Integer pageSize) {
         return this.courseService.findCourses(isAvailable, pageNumber, pageSize);
+    }
+
+    @PostMapping("/avaliate")
+    public ResponseEntity<String> avaliate(@RequestBody @Valid AvaliationDTO avaliationDTO) throws UnssuportedOperationException {
+        this.courseService.avaliate(avaliationDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

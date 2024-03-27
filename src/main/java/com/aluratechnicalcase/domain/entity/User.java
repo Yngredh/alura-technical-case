@@ -35,6 +35,9 @@ public class User {
     @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Course> courses;
 
+    @OneToMany(mappedBy = "apprentice", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Avaliation> avaliations;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
