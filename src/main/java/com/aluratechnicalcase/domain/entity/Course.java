@@ -1,14 +1,12 @@
 package com.aluratechnicalcase.domain.entity;
 
 import com.aluratechnicalcase.application.dto.CourseCreateDTO;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
 
@@ -20,9 +18,13 @@ import java.time.LocalDate;
 @Setter
 public class Course {
     @Id
+    @UuidGenerator
+    private String id;
+    @Column(unique = true)
     private String code;
     private String name;
     @ManyToOne
+    @JoinColumn(name = "instructor_id")
     private User instructor;
     private String description;
     private Boolean isAvailable;

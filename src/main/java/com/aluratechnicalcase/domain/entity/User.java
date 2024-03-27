@@ -6,25 +6,34 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
-@IdClass(UserId.class)
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class User {
     @Id
+    @UuidGenerator
+    private String id;
+
+    @Column(unique = true)
     private String username;
-    @Id
+
+    @Column(unique = true)
     private String email;
 
     private String name;
 
     private String password;
+
+    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Course> courses;
 
     @Enumerated(EnumType.STRING)
     private Role role;
