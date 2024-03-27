@@ -11,10 +11,16 @@ import com.aluratechnicalcase.domain.exception.CourseNotFoundException;
 import com.aluratechnicalcase.domain.exception.UnssuportedOperationException;
 import com.aluratechnicalcase.domain.usecase.CourseUseCases;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService implements CourseUseCases {
@@ -44,6 +50,14 @@ public class CourseService implements CourseUseCases {
         course.get().setIsAvailable(false);
         course.get().setInactivationDate(LocalDate.now());
         this.courseRepository.save(course.get());
+    }
+
+    @Override
+    public List<Course> findCourses(Boolean isAvailable, int pageNumber, int pageSize) {
+        Page<Course> courses = this.courseRepository.findAllByIsAvailable(
+                isAvailable, PageRequest.of(pageNumber, pageSize));
+
+        return courses.get().collect(Collectors.toList());
     }
 
 }
