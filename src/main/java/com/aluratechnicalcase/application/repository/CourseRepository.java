@@ -11,5 +11,6 @@ import java.util.List;
 
 public interface CourseRepository extends JpaRepository<Course, String> {
     Boolean existsByCode(String code);
+    Course findByCode(String code);
     Page<Course> findAllByIsAvailable(Boolean isAvailable, Pageable pageable);
 }

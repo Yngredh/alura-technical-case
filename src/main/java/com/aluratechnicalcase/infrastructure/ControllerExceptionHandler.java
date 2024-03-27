@@ -20,7 +20,7 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(UnssuportedOperationException.class)
     public ResponseEntity<String> handleUnssuportedOperationException(UnssuportedOperationException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("Este usuário não pode realizar essa ação");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Essa ação não pode ser realizada");
     }
 
     @ExceptionHandler(CourseAlreadyExistException.class)
