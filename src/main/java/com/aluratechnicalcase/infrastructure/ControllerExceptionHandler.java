@@ -1,7 +1,6 @@
 package com.aluratechnicalcase.infrastructure;
 
-import com.aluratechnicalcase.domain.exception.UserAlreadyExistException;
-import com.aluratechnicalcase.domain.exception.UserNotFoundException;
+import com.aluratechnicalcase.domain.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,6 +15,21 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Username não encontrado");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+    }
+
+    @ExceptionHandler(UnssuportedOperationException.class)
+    public ResponseEntity<String> handleUnssuportedOperationException(UnssuportedOperationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Este usuário não pode realizar essa ação");
+    }
+
+    @ExceptionHandler(CourseAlreadyExistException.class)
+    public ResponseEntity<String> handleCourseAlreadyExistException(CourseAlreadyExistException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("O código do curso já existe");
+    }
+
+    @ExceptionHandler(CourseNotFoundException.class)
+    public ResponseEntity<String> handleCourseNotFoundException(CourseNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Curso não encontrado");
     }
 }
