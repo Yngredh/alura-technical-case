@@ -2,6 +2,7 @@ package com.aluratechnicalcase.presentation.controller;
 
 import com.aluratechnicalcase.application.dto.AvaliationDTO;
 import com.aluratechnicalcase.application.dto.CourseCreateDTO;
+import com.aluratechnicalcase.application.dto.NetPromoterScoreView;
 import com.aluratechnicalcase.application.service.CourseService;
 import com.aluratechnicalcase.domain.entity.Course;
 import com.aluratechnicalcase.domain.exception.CourseAlreadyExistException;
@@ -49,5 +50,10 @@ public class CourseController {
     public ResponseEntity<String> avaliate(@RequestBody @Valid AvaliationDTO avaliationDTO) throws UnssuportedOperationException {
         this.courseService.avaliate(avaliationDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/netPromoterScore")
+    public NetPromoterScoreView getNetPromoterScore() {
+        return this.courseService.getAllNetPromoterScore();
     }
 }

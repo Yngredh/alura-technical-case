@@ -2,8 +2,11 @@ package com.aluratechnicalcase.application.service;
 
 import com.aluratechnicalcase.application.dto.AvaliationDTO;
 import com.aluratechnicalcase.application.dto.CourseCreateDTO;
+import com.aluratechnicalcase.application.dto.NetPromoterScoreDTO;
+import com.aluratechnicalcase.application.dto.NetPromoterScoreView;
 import com.aluratechnicalcase.application.repository.AvaliationRespository;
 import com.aluratechnicalcase.application.repository.CourseRepository;
+import com.aluratechnicalcase.application.repository.RegisterRepository;
 import com.aluratechnicalcase.application.repository.UserRepository;
 import com.aluratechnicalcase.domain.entity.Avaliation;
 import com.aluratechnicalcase.domain.entity.Course;
@@ -19,7 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,11 +34,14 @@ public class CourseService implements CourseUseCases {
     private UserRepository userRepository;
     private CourseRepository courseRepository;
     private AvaliationRespository avaliationRespository;
+    private RegisterRepository registerRepository;
 
-    public CourseService(UserRepository userRepository, CourseRepository courseRepository, AvaliationRespository avaliationRespository) {
+    public CourseService(UserRepository userRepository, CourseRepository courseRepository,
+                         AvaliationRespository avaliationRespository, RegisterRepository registerRepository) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.avaliationRespository = avaliationRespository;
+        this.registerRepository = registerRepository;
     }
 
     @Override
@@ -91,6 +99,40 @@ public class CourseService implements CourseUseCases {
         if (course.getIsAvailable().equals(Boolean.FALSE))
             throw new UnssuportedOperationException("This course is not available");
         else return course;
+    }
+
+    public NetPromoterScoreView getAllNetPromoterScore() {
+        NetPromoterScoreView npsView = new NetPromoterScoreView();
+
+        List<Course> courses = registerRepository.findAllCoursesWithAtLeastFourUsers();
+        List<Avaliation> allAvaliations = avaliationRespository.findAllByCourseIdIn(courses.stream().map(Course::getId).toList());
+
+        Map<Course, List<Avaliation>> mapCoursesAndAvaliations = buildMapAvaliationsByCourse(allAvaliations, courses);
+
+        for (Course c : mapCoursesAndAvaliations.keySet()) {
+            List<Avaliation> avaliationsByCourse = mapCoursesAndAvaliations.get(c);
+
+            NetPromoterScoreDTO nps = new NetPromoterScoreDTO(c.getName(), calculateNetPromoterScore(avaliationsByCourse));
+            npsView.getNps().add(nps);
+        }
+
+        return npsView;
+    }
+
+    public Map<Course, List<Avaliation>> buildMapAvaliationsByCourse(List<Avaliation> allAvaliations, List<Course> courses) {
+        Map<Course, List<Avaliation>> mapCoursesAndAvaliations = new HashMap<>();
+
+        for (Course c : courses) {
+            mapCoursesAndAvaliations.put(c, allAvaliations.stream().filter(a -> a.getCourse().equals(c)).toList());
+        }
+        return mapCoursesAndAvaliations;
+    }
+
+    public int calculateNetPromoterScore(List<Avaliation> avaliationsByCourse) {
+        int total = avaliationsByCourse.size();
+        List<Integer> promoters = avaliationsByCourse.stream().map(Avaliation::getValue).filter(value -> value >= 9).toList();
+        List<Integer> detractors = avaliationsByCourse.stream().map(Avaliation::getValue).filter(value -> value < 6).toList();
+        return ((promoters.size() - detractors.size()) / total) * 100;
     }
 
 }
